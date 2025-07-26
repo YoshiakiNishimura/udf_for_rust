@@ -71,11 +71,14 @@ pub struct FunctionRust {
     pub index: i32,
     pub name: String,
     pub kind: String,
+    pub input_columns: Vec<ColumnRust>,
+    pub output_columns: Vec<ColumnRust>,
 }
 
 #[derive(Serialize)]
 pub struct ServiceRust {
     pub name: String,
+    pub functions: Vec<FunctionRust>,
 }
 
 pub fn dump_json(plugin_dir: &str) -> Result<String, Box<dyn std::error::Error>> {
@@ -102,16 +105,8 @@ pub fn dump_json(plugin_dir: &str) -> Result<String, Box<dyn std::error::Error>>
                 panic!("Function null");
             }
             let func = func_ptr.as_ref().unwrap();
-            let f = FunctionRust {
-                index: func.get_index(),
-                name: func.get_name().to_string_lossy().into_owned(),
-                kind: func.get_kind().to_string_lossy().into_owned(),
-            };
-
-            let input_col_count = bridge.input_column_count(i, j);
             let mut input_columns = Vec::new();
-
-            for k in 0..input_col_count {
+            for k in 0..bridge.input_column_count(i, j) {
                 let col_ptr = bridge.get_input_column_at(i, j, k);
                 if col_ptr.is_null() {
                     panic!("Input Column null");
@@ -124,10 +119,8 @@ pub fn dump_json(plugin_dir: &str) -> Result<String, Box<dyn std::error::Error>>
                 });
             }
 
-            let output_col_count = bridge.output_column_count(i, j);
             let mut output_columns = Vec::new();
-
-            for k in 0..output_col_count {
+            for k in 0..bridge.output_column_count(i, j) {
                 let col_ptr = bridge.get_output_column_at(i, j, k);
                 if col_ptr.is_null() {
                     panic!("Output Column null");
@@ -140,10 +133,16 @@ pub fn dump_json(plugin_dir: &str) -> Result<String, Box<dyn std::error::Error>>
                 });
             }
 
-            functions.push(f);
+            functions.push(FunctionRust {
+                index: func.get_index(),
+                name: func.get_name().to_string_lossy().into_owned(),
+                kind: func.get_kind().to_string_lossy().into_owned(),
+                input_columns,
+                output_columns,
+            });
         }
 
-        services.push(ServiceRust { name });
+        services.push(ServiceRust { name, functions });
     }
 
     let json = serde_json::to_string_pretty(&services)?;
