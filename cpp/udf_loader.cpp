@@ -6,27 +6,38 @@
 namespace udf {
 namespace fs = std::filesystem;
 
-void udf_loader::load(std::string_view dir_path) {
-    fs::path path(dir_path);
-
-    if (!fs::exists(path) || !fs::is_directory(path)) {
-        std::cerr << "Plugin directory not found: " << path << std::endl;
-        return;
-    }
-
-    for (const auto& entry : fs::directory_iterator(path)) {
-        if (!entry.is_regular_file()) continue;
-        if (entry.path().extension() != ".so") continue;
-
-        std::string full_path = entry.path().string();
-        void* handle          = dlopen(full_path.c_str(), RTLD_LAZY);
-        if (!handle) {
-            std::cerr << "Failed to load " << full_path << ": " << dlerror() << std::endl;
+void udf_loader::load(std::string_view plugin_path) {
+    fs::path path(plugin_path);
+    if (fs::is_regular_file(path)) {
+        if (path.extension() == ".so") {
+            std::string full_path = path.string();
+            void* handle          = dlopen(full_path.c_str(), RTLD_LAZY);
+            if (!handle) {
+                std::cerr << "Failed to load " << full_path << ": " << dlerror() << std::endl;
+            } else {
+                handles_.emplace_back(handle);
+                create_api_from_handle(handle);
+            }
         } else {
-            std::cout << "Loaded plugin: " << full_path << std::endl;
-            handles_.emplace_back(handle);
-            create_api_from_handle(handle);
+            std::cerr << "Specified file is not a .so plugin: " << path << std::endl;
         }
+    } else if (fs::is_directory(path)) {
+        for (const auto& entry : fs::directory_iterator(path)) {
+            if (!entry.is_regular_file()) continue;
+            if (entry.path().extension() != ".so") continue;
+
+            std::string full_path = entry.path().string();
+            void* handle          = dlopen(full_path.c_str(), RTLD_LAZY);
+            if (!handle) {
+                std::cerr << "Failed to load " << full_path << ": " << dlerror() << std::endl;
+            } else {
+                std::cout << "Loaded plugin: " << full_path << std::endl;
+                handles_.emplace_back(handle);
+                create_api_from_handle(handle);
+            }
+        }
+    } else {
+        std::cerr << "Plugin path is not valid: " << path << std::endl;
     }
 }
 
