@@ -10,9 +10,18 @@ enum class function_kind_type {
 };
 
 enum class type_kind_type {
+    Boolean,
     Int4,
     Int8,
+    Decimal,
+    Float4,
+    Float8,
     String,
+    Bytes,
+    Timestamp,
+    TimestampWithTimeZone,
+    Blob,
+    Clob
 };
 
 class column_descriptor {

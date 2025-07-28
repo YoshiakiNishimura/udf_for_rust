@@ -6,7 +6,7 @@
 namespace udf {
 class udf_loader : public plugin_loader {
   public:
-    void load(std::string_view dir_path) override;
+    void load(std::string_view plugin_path) override;
     void unload_all() override;
     const std::vector<plugin_api*>& apis() const noexcept override;
     ~udf_loader() override;

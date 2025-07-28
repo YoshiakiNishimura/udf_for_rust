@@ -15,12 +15,20 @@ std::string to_kind_string(function_kind_type kind) {
         default: return "Unknown";
     }
 }
-
 std::string to_type_string(type_kind_type kind) {
     switch (kind) {
+        case type_kind_type::Boolean: return "Boolean";
         case type_kind_type::Int4: return "Int4";
         case type_kind_type::Int8: return "Int8";
+        case type_kind_type::Decimal: return "Decimal";
+        case type_kind_type::Float4: return "Float4";
+        case type_kind_type::Float8: return "Float8";
+        case type_kind_type::Bytes: return "Bytes";
         case type_kind_type::String: return "String";
+        case type_kind_type::Timestamp: return "Timestamp";
+        case type_kind_type::TimestampWithTimeZone: return "TimestampWithTimeZone";
+        case type_kind_type::Blob: return "Blob";
+        case type_kind_type::Clob: return "Clob";
         default: return "Unknown";
     }
 }
