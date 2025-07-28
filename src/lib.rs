@@ -91,7 +91,7 @@ pub fn dump_json(plugin_dir: &str) -> Result<String, Box<dyn std::error::Error>>
     for i in 0..svc_count {
         let svc_ptr = bridge.get_service_at(i);
         if svc_ptr.is_null() {
-            panic!("Service null");
+            continue;
         }
         let svc = svc_ptr.as_ref().unwrap();
         let name = svc.get_name().to_string_lossy().into_owned();
@@ -102,14 +102,14 @@ pub fn dump_json(plugin_dir: &str) -> Result<String, Box<dyn std::error::Error>>
         for j in 0..func_count {
             let func_ptr = bridge.get_function_at(i, j);
             if func_ptr.is_null() {
-                panic!("Function null");
+                continue;
             }
             let func = func_ptr.as_ref().unwrap();
             let mut input_columns = Vec::new();
             for k in 0..bridge.input_column_count(i, j) {
                 let col_ptr = bridge.get_input_column_at(i, j, k);
                 if col_ptr.is_null() {
-                    panic!("Input Column null");
+                    continue;
                 }
                 let col = col_ptr.as_ref().unwrap();
                 input_columns.push(ColumnRust {
@@ -123,7 +123,7 @@ pub fn dump_json(plugin_dir: &str) -> Result<String, Box<dyn std::error::Error>>
             for k in 0..bridge.output_column_count(i, j) {
                 let col_ptr = bridge.get_output_column_at(i, j, k);
                 if col_ptr.is_null() {
-                    panic!("Output Column null");
+                    continue;
                 }
                 let col = col_ptr.as_ref().unwrap();
                 output_columns.push(ColumnRust {
